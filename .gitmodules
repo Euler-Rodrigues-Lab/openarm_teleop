@@ -1,0 +1,6 @@
+[submodule "external/XRT_devices"]
+	path = external/XRT_devices
+	url = https://github.com/Euler-Rodrigues-Lab/XRT_devices.git
+[submodule "external/geo_kin_core"]
+	path = external/geo_kin_core
+	url = https://github.com/Euler-Rodrigues-Lab/geo_kin_core.git

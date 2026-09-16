@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openarm-teleop"
+version = "0.1.0"
+description = "OpenArm v1 bimanual teleoperation with licensed Rust retargeting and shared XRT input"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT; robot assets retain their upstream license" }
+authors = [{name = "Chuizheng Kong"}]
+dependencies = ["numpy", "scipy", "mujoco>=3.3", "geo-kin-core", "xrt-devices>=0.1.0"]
+
+[project.optional-dependencies]
+devices = ["xrt-devices[xr,recording]"]
+mediapipe = ["xrt-devices[mediapipe]"]
+test = ["pytest"]
+
+[project.scripts]
+openarm-teleop = "openarm_teleop.demos.teleop:main"
+
+[tool.uv.sources]
+geo-kin-core = {path = "external/geo_kin_core", editable = true}
+xrt-devices = {path = "external/XRT_devices", editable = true}
+
+[tool.geo-kin]
+product = "openarm"
+
+[tool.setuptools.packages.find]
+include = ["openarm_teleop*"]
+
+[tool.setuptools.package-data]
+openarm_teleop = ["assets/v1/*.xml", "assets/v1/*.txt", "assets/v1/meshes/**/*", "assets/specs/*.npz", "assets/sample_motion/*.npz", "assets/sample_motion/README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
