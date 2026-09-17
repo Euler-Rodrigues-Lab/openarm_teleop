@@ -154,16 +154,25 @@ headless replay tests; hardware control is not implemented here.
 The model's contact flags and collision-filter proxy geometry are preserved.
 A successful replay or enabled filter is not a hardware collision validation.
 
-## Tests
+## Citation
 
-```bash
-.venv/bin/python -m pytest -q
+If you use this retargeting stack, OpenArm teleoperation setup, or SEW solver in your research, please cite:
+
+```bibtex
+@article{kong2026closedform,
+  title={A Closed-Form Geometric Retargeting Solver for Upper Body Humanoid Robot Teleoperation},
+  author={Kong, Chuizheng and Cho, Yunho and Jung, Wonsuhk and Wibowo, Idris and Shinde, Parth and Vinodh-Sangeetha, Sundhar and Chung, Long Kiu and Chen, Zhenyang and others},
+  journal={arXiv preprint arXiv:2602.01632},
+  year={2026},
+  url={https://arxiv.org/abs/2602.01632}
+}
 ```
 
-Public tests cover model/resource loading, controller actuation, bundled motion,
-replay source selection, and application cleanup without requiring a solver license.
-Analytic Python/Rust parity and licensed replay are validated separately with the
-solver distribution.
+## Licensing
+
+MIT licensed. The SEW retargeting solver itself is patented & licensed
+separately (`geo_kin` wheel); this repo runs against the public fallback out
+of the box.
 
 Application code and sample recordings: MIT. Robot geometry derives from
 [OpenArm's robot description](https://github.com/enactic/openarm_description);
