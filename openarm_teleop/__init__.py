@@ -10,3 +10,7 @@ def spec_path() -> Path:
 SAMPLE_MOTIONS = {name: Path(__file__).parent / "assets/sample_motion" / f"{name}.npz"
                   for name in ("ipman_roll", "picking_up_mustard")}
 SAMPLE_MOTION = SAMPLE_MOTIONS["ipman_roll"]
+
+
+def scene_path() -> Path:
+    return Path(__file__).parent / "assets/v1/scene.xml"

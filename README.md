@@ -38,7 +38,17 @@ uv run geo-kin-provision install
 Replace the wheel and license placeholders with the supplied files. The wheel
 and license must include the `openarm` feature; G1-only or RBY1-only wheels
 cannot run OpenArm. The private binary is stored once outside the repository and
-remains linked across normal `uv sync` and `uv run` operations.
+remains linked across normal `uv sync` and `uv run` operations. Confirm the
+selected build with:
+
+```bash
+.venv/bin/python -c "import geo_kin; print(geo_kin.__file__); geo_kin.RetargetSession(robot='openarm')"
+```
+
+The path should be under the shared `geo-kin/installs/openarm` directory. License
+activation is user-wide; switching to another robot's license can require
+`geo-kin-provision activate my-openarm-license` before returning to OpenArm.
+An explicit `GEO_KIN_LICENSE` environment variable takes precedence.
 
 ## Offline replay
 
@@ -63,6 +73,20 @@ These are byte-for-byte copies of the robot packages' sample NPZ files. The
 human targets are retargeted to OpenArm; recorded G1/RBY1 joint angles are not
 replayed. Both files ship in the package, so no headset, camera, or additional
 recording download is needed.
+
+Replay and live simulation default to **kinematic mode**: each solved goal is
+applied directly to the robot pose, without actuator dynamics. Add `--dynamic`
+to use the position-actuator simulation. Both MuJoCo side panels start hidden.
+
+The viewer uses a bright scene with key/fill lights, a light floor, and a
+blue human-skeleton overlay. The overlay uses the same mocap-to-world alignment
+as the solver and the robot's mocap base. When safety filtering is enabled,
+green translucent capsules show the Rust filter's actual post-XPBD geometry:
+torso, shoulder bridge, upper arms, forearms, and hands. They use OpenArm's
+own filter radii and the robot's shoulder-centered frame, not the human overlay
+radii or a different robot's collision preset. `--no-safety-filter` also hides
+these capsules. Use `--no-human-overlay` (also
+`--no_human_overlay`) to hide it. The overlay applies to live inputs too.
 
 Replay stops at the end by default. Useful options:
 
@@ -109,9 +133,9 @@ headless replay tests; hardware control is not implemented here.
 
 - Both demos require the licensed Rust backend explicitly; they do not silently
   substitute a different IK algorithm.
-- Defaults match the OpenArm session: TCP functional retargeting, functional
-  offset, and the SEW self-collision filter enabled; joint clipping disabled.
-- `--retarget-mode pose` disables TCP functional retargeting.
+- Demo defaults: `pose` retargeting, functional offset and the SEW self-collision
+  filter enabled; joint clipping disabled.
+- `--retarget-mode tcp` enables TCP functional retargeting; `pose` disables it.
   `--no-functional-offset`, `--no-safety-filter`, and `--limited` expose the
   corresponding solver options.
 - Arm joint order is `openarm_{right,left}_joint1` through `joint7`, in radians.
@@ -119,7 +143,9 @@ headless replay tests; hardware control is not implemented here.
   thumb–index distance; the controller subtracts 0.01 m and clips to 0–0.044 m.
 - The exact model is `openarm_teleop/assets/v1/openarm_bimanual.xml` (MuJoCo MJCF,
   not URDF). Its mesh paths remain relative to `meshes/`. The model's joint
-  frames, limits, dimensions, and dynamics are unchanged.
+  frames, limits, dimensions, and dynamics are unchanged. The demos load
+  `assets/v1/scene.xml`, which includes this model and adds only presentation:
+  lights, sky, and a non-colliding floor.
 - `assets/specs/openarm_v1.npz` contains the matching kinematic geometry and
   source XML SHA-256. The licensed wheel embeds the same specification.
 

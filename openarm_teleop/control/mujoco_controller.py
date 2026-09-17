@@ -332,6 +332,21 @@ class OpenArmMuJoCoController:
         """
         self.update_position_control()
 
+    def update_kinematic(self):
+        """Pose both arms and grippers directly, then refresh forward kinematics."""
+        for side in ("right", "left"):
+            arm_goal = getattr(self, f"q_goal_{side}")
+            if arm_goal is not None:
+                self.data.qpos[getattr(self, f"{side}_arm_qpos_addrs")] = arm_goal
+            hand_goal = getattr(self, f"q_goal_{side}_hand")
+            if hand_goal is not None:
+                # Both fingers share the single gripper opening target.
+                self.data.qpos[getattr(self, f"{side}_hand_qpos_addrs")] = hand_goal[0]
+        self.data.qvel[:] = 0.0
+        self.data.qacc_warmstart[:] = 0.0
+        mujoco.mj_forward(self.model, self.data)
+        self._update_current_positions()
+
     def update_position_control(self):
         """
         Apply joint position goals directly to actuators (for position actuators).

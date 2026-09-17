@@ -30,6 +30,12 @@ def test_exact_model_and_controller():
     for _ in range(10):
         mujoco.mj_step(model,data)
     assert np.isfinite(data.qpos).all()
+    controller.update_kinematic()
+    np.testing.assert_array_equal(controller.q_current_right,goal)
+    np.testing.assert_array_equal(controller.q_current_left,goal)
+    np.testing.assert_allclose(data.qpos[controller.left_hand_qpos_addrs],[.025,.025])
+    np.testing.assert_allclose(data.qpos[controller.right_hand_qpos_addrs],[.044,.044])
+    np.testing.assert_array_equal(data.qvel,np.zeros(model.nv))
 
 
 @pytest.mark.parametrize('sample,n,sha',[
@@ -87,3 +93,79 @@ def test_device_cleanup_on_solve_failure(monkeypatch):
     with pytest.raises(RuntimeError,match='test failure'):
         run(parser().parse_args(['--headless','--steps','1']))
     assert closed==[True]
+
+
+def test_lit_scene_preserves_robot_geometry():
+    from openarm_teleop import scene_path
+    robot=mujoco.MjModel.from_xml_path(str(model_path()))
+    scene=mujoco.MjModel.from_xml_path(str(scene_path()))
+    assert scene.nq==robot.nq and scene.nu==robot.nu
+    assert scene.nlight==2
+    assert (scene.vis.headlight.ambient > robot.vis.headlight.ambient).all()
+    for field in ('jnt_pos','jnt_axis','jnt_range','body_pos','body_quat','actuator_gainprm'):
+        np.testing.assert_array_equal(getattr(scene,field),getattr(robot,field))
+
+
+@pytest.mark.parametrize('sample',list(SAMPLE_MOTIONS))
+def test_human_overlay_draws_and_aligns(sample):
+    from types import SimpleNamespace
+    from openarm_teleop.visualization import ReplayOverlay
+    from openarm_teleop import scene_path
+    model=mujoco.MjModel.from_xml_path(str(scene_path()))
+    viewer=SimpleNamespace(user_scn=mujoco.MjvScene(model,maxgeom=1000))
+    overlay=ReplayOverlay(viewer)
+    frame=load_frames(SAMPLE_MOTIONS[sample]).frame_at_time(0)
+    r=np.array([[0.,-1.,0.],[1.,0.,0.],[0.,0.,1.]])
+    p=np.array([.2,-.3,.1])
+    session=SimpleNamespace(R_mocap_world=r,p_mocap_world=p)
+    count=overlay.draw(frame,session)
+    assert count>10 and viewer.user_scn.ngeom==count
+    # Every skeleton point uses the same mocap -> simulation mapping.
+    point=np.array([1.,2.,3.])
+    np.testing.assert_allclose(overlay.human._to_view(point),r.T@(point-p))
+    if frame.skeleton:
+        parents=frame.skeleton['parents']
+        child=next(i for i,parent in enumerate(parents) if parent>=0)
+        points=frame.skeleton['positions']
+        midpoint=(points[child]+points[parents[child]])/2
+    else:
+        sew=frame.left_sew
+        midpoint=frame.p_world_upper_body+frame.R_world_upper_body@((sew.S+sew.E)/2)
+    np.testing.assert_allclose(viewer.user_scn.geoms[0].pos,r.T@(midpoint-p),atol=1e-6)
+    assert overlay.draw(None,session)==0
+    assert viewer.user_scn.ngeom==0
+
+
+def test_openarm_provision_product():
+    from geo_kin_core import provision
+    from pathlib import Path
+    assert provision._product_parts('openarm')==('openarm',None)
+    assert provision._project_product(Path(__file__).resolve().parents[1],None)=='openarm'
+
+
+def test_safety_overlay_uses_solver_capsules_in_robot_frame():
+    from types import SimpleNamespace
+    from openarm_teleop import scene_path
+    from openarm_teleop.visualization import ReplayOverlay
+    model=mujoco.MjModel.from_xml_path(str(scene_path()))
+    data=mujoco.MjData(model)
+    controller=OpenArmMuJoCoController(model,data)
+    controller.setup_mocap_body()
+    rotation=np.array([[0.,-1.,0.],[1.,0.,0.],[0.,0.,1.]])
+    controller.update_mocap_body([.2,-.3,.4],rotation)
+    mujoco.mj_forward(model,data)
+    viewer=SimpleNamespace(user_scn=mujoco.MjvScene(model,maxgeom=1000))
+    a=np.array([0.,.15,0.]);b=np.array([.2,.15,-.25]);radius=.05
+    session=SimpleNamespace(sew_capsules=lambda:[('L_upper',a,b,radius)])
+    frame=load_frames(SAMPLE_MOTIONS['ipman_roll']).frame_at_time(0)
+    overlay=ReplayOverlay(viewer,show_human=False,show_safety=True)
+    assert overlay.draw(frame,session,controller.get_sew_transform())==1
+    capsule=viewer.user_scn.geoms[0]
+    expected=np.array([.2,-.3,.4])+rotation@(np.array([0.,0.,.698])+(a+b)/2)
+    np.testing.assert_allclose(capsule.pos,expected,atol=1e-6)
+    assert capsule.size[0]==pytest.approx(radius)
+    overlay.show_safety=False
+    assert overlay.draw(frame,session,controller.get_sew_transform())==0
+    assert viewer.user_scn.ngeom==0
+    overlay.show_safety=True
+    assert overlay.draw(None,session,controller.get_sew_transform())==0
