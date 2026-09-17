@@ -1,5 +1,7 @@
 # OpenArm teleoperation
 
+![OpenArm teleoperation with safety capsule visualization](docs/media/openarm_with_safety_guide.gif)
+
 Bimanual OpenArm v1 teleoperation in MuJoCo, using the licensed `geo_kin` Rust
 solver and shared input processing from [XRT_devices](https://github.com/Euler-Rodrigues-Lab/XRT_devices).
 Replay the same human recordings shipped with G1 and RBY1, or use XR and MediaPipe input.
