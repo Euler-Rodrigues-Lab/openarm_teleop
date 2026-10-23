@@ -140,7 +140,7 @@ Live headset/camera behavior is separate from the headless replay tests.
 # Rehearse the whole sequence on a fake CAN bus (no motors).
 .venv/bin/python -m openarm_teleop.demos.replay_offline --hardware --dry-run
 
-# Real arm, with the bring-up defaults: right arm only, half gains, 0.5 rad/s,
+# Real arm, with the bring-up defaults: both arm, half gains, 0.5 rad/s,
 # and for the replay the picking_up_mustard sample at 0.3x speed.
 .venv/bin/python -m openarm_teleop.demos.replay_offline --hardware
 .venv/bin/python -m openarm_teleop.demos.teleop --hardware --device xr
