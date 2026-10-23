@@ -1,0 +1,52 @@
+name: Publish to PyPI
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Verify release tag and build
+        run: |
+          python - <<'PYCODE'
+          import os, tomllib
+          version = tomllib.load(open('pyproject.toml', 'rb'))['project']['version']
+          assert os.environ['GITHUB_REF'] == f'refs/tags/v{version}', 'Run only on the matching version tag'
+          PYCODE
+          uv build --no-sources
+      - name: Validate package metadata
+        run: uvx --from twine twine check dist/*
+      - name: Verify installed wheels
+        run: |
+          uv venv .release-venv
+          uv pip install --python .release-venv/bin/python dist/*.whl
+          cd /tmp
+          "$GITHUB_WORKSPACE/.release-venv/bin/python" "$GITHUB_WORKSPACE/scripts/check_release.py"
+      - name: Test installed package
+        run: |
+          uv pip install --python .release-venv/bin/python pytest
+          cd /tmp
+          "$GITHUB_WORKSPACE/.release-venv/bin/python" -m pytest "$GITHUB_WORKSPACE/tests" -q --import-mode=importlib
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/*
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

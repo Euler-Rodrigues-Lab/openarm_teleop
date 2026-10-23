@@ -13,28 +13,43 @@ separately as a licensed binary wheel. No robot hardware driver is included.
 ## Install
 
 Python 3.10 or later and [uv](https://docs.astral.sh/uv/) are required.
+The 0.1.1 release uses versioned PyPI dependencies; customer installations do not
+need Git submodules. Publish the dependency releases before using these commands.
 
 ```bash
-git clone --recurse-submodules https://github.com/Euler-Rodrigues-Lab/openarm_teleop.git
+uv venv .venv
+uv pip install --python .venv/bin/python 'openarm-teleop==0.1.1'
+```
+
+For a source checkout after the releases are published:
+
+```bash
+git clone https://github.com/Euler-Rodrigues-Lab/openarm_teleop.git
 cd openarm_teleop
 uv sync --extra test
 ```
 
-For an existing checkout, initialize its pinned dependencies with
-`git submodule update --init --recursive`. Both `external/XRT_devices` and
-`external/geo_kin_core` are Git submodules; their code is reused directly.
+For offline installation, use the tested platform-specific wheelhouse supplied
+with the distribution:
+
+```bash
+uv pip install --python .venv/bin/python --no-index \
+  --find-links /path/to/wheelhouse 'openarm-teleop==0.1.1'
+```
+
+Developers can explicitly opt into editable dependencies; see [DEVELOPING.md](DEVELOPING.md).
 
 To use the licensed OpenArm solver, register the supplied wheel and license
 once per user, then link the central build into this checkout:
 
 ```bash
-uv run geo-kin-provision register \
+.venv/bin/geo-kin-provision register \
   --product openarm \
   --wheel /path/to/geo_kin-OPENARM.whl \
   --license /path/to/openarm_license.toml \
   --name my-openarm-license \
-  --activate
-uv run geo-kin-provision install
+  --activate --replace
+.venv/bin/geo-kin-provision install
 ```
 
 Replace the wheel and license placeholders with the supplied files. The wheel
@@ -104,7 +119,7 @@ Replay stops at the end by default. Useful options:
 .venv/bin/python -m openarm_teleop.demos.replay_offline --csv /path/to/body_pose.csv
 ```
 
-CSV replay needs the recording extra: `uv sync --extra devices --inexact`.
+CSV replay needs the recording extra: `uv pip install --python .venv/bin/python "openarm-teleop[devices]==0.1.1"`.
 The input schema is `geo_kin_core.frames/1`. `--rate` / `--max_fr` selects the
 control rate (default 60 Hz); `--steps` / `--max_frames` limits control frames.
 Headless replay advances recording time deterministically and runs without
@@ -115,7 +130,7 @@ wall-clock pacing. Interactive playback uses the MuJoCo viewer and requires a di
 XR input uses XRT_devices' process-isolated receiver:
 
 ```bash
-uv sync --extra devices --inexact
+uv pip install --python .venv/bin/python "openarm-teleop[devices]==0.1.1"
 .venv/bin/python -m openarm_teleop.demos.teleop --device xr --host 0.0.0.0 --port 8080
 ```
 
@@ -123,7 +138,7 @@ Connect your XRT client to this receiver. Add `--record` to save input under
 `recordings/`. For a webcam:
 
 ```bash
-uv sync --extra mediapipe --inexact
+uv pip install --python .venv/bin/python "openarm-teleop[mediapipe]==0.1.1"
 .venv/bin/python -m openarm_teleop.demos.teleop --device mediapipe --camera 0
 ```
 

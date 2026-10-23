@@ -5,11 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
-      - run: uv sync --locked --extra test
+      - run: uv sync --extra test
       - run: uv run --no-sync pytest -q
-      - run: uv build
+      - run: uv build --no-sources
+      - run: uv venv .wheel-test
+      - run: uv pip install --python .wheel-test/bin/python dist/*.whl
+      - run: cd /tmp && "$GITHUB_WORKSPACE/.wheel-test/bin/python" "$GITHUB_WORKSPACE/scripts/check_release.py"

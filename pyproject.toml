@@ -4,25 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openarm-teleop"
-version = "0.1.0"
+version = "0.1.1"
 description = "OpenArm v1 bimanual teleoperation with licensed Rust retargeting and shared XRT input"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT; robot assets retain their upstream license" }
 authors = [{name = "Chuizheng Kong"}]
-dependencies = ["numpy", "scipy", "mujoco>=3.3", "geo-kin-core", "xrt-devices>=0.1.0"]
+dependencies = ["numpy", "scipy", "mujoco>=3.3", "geo-kin-core==0.1.1", "xrt-devices==0.1.1"]
 
 [project.optional-dependencies]
-devices = ["xrt-devices[xr,recording]"]
-mediapipe = ["xrt-devices[mediapipe]"]
+devices = ["xrt-devices[xr,recording]==0.1.1"]
+mediapipe = ["xrt-devices[mediapipe]==0.1.1"]
 test = ["pytest"]
 
 [project.scripts]
 openarm-teleop = "openarm_teleop.demos.teleop:main"
-
-[tool.uv.sources]
-geo-kin-core = {path = "external/geo_kin_core", editable = true}
-xrt-devices = {path = "external/XRT_devices", editable = true}
 
 [tool.geo-kin]
 product = "openarm"
