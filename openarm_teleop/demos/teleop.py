@@ -274,7 +274,10 @@ def _hardware_preflight(args, controller):
     try:
         warnings = controller.connect()
     except (HardwareError, RuntimeError) as e:
-        controller.stop()
+        try:
+            controller.stop()
+        except Exception as stop_error:  # noqa: BLE001 - the pre-flight error is the one to report
+            print(f'Warning: shutdown after the failed pre-flight also failed: {stop_error}')
         raise SystemExit(f'Error: {e}')
     limits = f'{args.joint_limit_margin_deg:.1f} deg inside the limits'
     grippers = (f'on (closing {args.gripper_close_overtravel_deg:g} deg past closed)'

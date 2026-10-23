@@ -10,10 +10,11 @@ from openarm_teleop.demos.replay_offline import parse_args
 READY = np.array([0., 0., 0., np.pi / 2, 0., 0., 0.])
 
 
-def make(arms=('right', 'left'), **kwargs):
+def make(arms=('right', 'left'), buses=None, **kwargs):
     model = mujoco.MjModel.from_xml_path(str(scene_path()))
     data = mujoco.MjData(model)
-    buses = {side: FakeCANBus(f'fake_{side}') for side in arms}
+    if buses is None:
+        buses = {side: FakeCANBus(f'fake_{side}') for side in arms}
     kwargs.setdefault('control_hz', 500.0)
     return OpenArmHardwareController(buses, model, data, **kwargs), buses
 
@@ -56,6 +57,60 @@ def test_ramp_respects_speed_and_joint_limits():
     finally:
         controller.stop()
     assert not any(bus.enabled or bus.opened for bus in buses.values())
+
+
+class FailingBus(FakeCANBus):
+    """FakeCANBus whose named steps raise, to rehearse a bus dying during shutdown."""
+
+    def __init__(self, interface, fail_on=(), **kwargs):
+        super().__init__(interface, **kwargs)
+        self.fail_on = set(fail_on)
+
+    def disable(self):
+        if 'disable' in self.fail_on:
+            raise RuntimeError(f'{self.interface}: disable failed')
+        super().disable()
+
+    def close(self):
+        if 'close' in self.fail_on:
+            raise RuntimeError(f'{self.interface}: close failed')
+        super().close()
+
+
+@pytest.mark.parametrize('step', ['disable', 'close'])
+def test_stop_shuts_down_every_bus_when_the_first_one_fails(step):
+    # The right bus comes first in iteration order, so its failure used to abort the loop
+    # and leave the left arm enabled and open.
+    buses = {'right': FailingBus('fake_right', fail_on=[step]), 'left': FakeCANBus('fake_left')}
+    controller, _ = make(buses=buses)
+    controller.connect()
+    controller.start()
+    assert buses['left'].enabled and buses['left'].opened
+
+    with pytest.raises(RuntimeError, match=f'fake_right: {step} failed'):
+        controller.stop()
+
+    assert not buses['left'].enabled and not buses['left'].opened
+    if step == 'disable':
+        assert not buses['right'].opened  # closing still ran after disable raised
+    assert not controller._enabled
+    assert controller._thread is None or not controller._thread.is_alive()
+
+    # Shutdown is idempotent: a second stop() does not retry disable or raise.
+    buses['right'].fail_on = {'disable'}
+    controller.stop()
+
+
+def test_stop_closes_every_bus_after_a_failed_connect():
+    # stop() also runs from the pre-flight error path, before anything is enabled.
+    buses = {'right': FailingBus('fake_right', fail_on=['close']), 'left': FakeCANBus('fake_left')}
+    controller, _ = make(buses=buses)
+    controller.connect()
+    assert buses['left'].opened
+
+    with pytest.raises(RuntimeError, match='fake_right: close failed'):
+        controller.stop()
+    assert not buses['left'].opened and not buses['left'].enabled
 
 
 def test_only_selected_arm_is_commanded():

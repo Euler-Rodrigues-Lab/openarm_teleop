@@ -198,17 +198,34 @@ class OpenArmHardwareController:
         self._thread.start()
 
     def stop(self):
-        """Stop commanding and switch the motors off where they are."""
+        """
+        Stop commanding and switch the motors off where they are. Every bus is disabled and
+        then closed even if one of them fails; the first failure is re-raised afterwards
+        (with the others attached as notes on Python 3.11+). Safe to call more than once.
+        """
         self._stop.set()
         if self._thread is not None and self._thread.is_alive():
             self._thread.join(timeout=1.0)
-        for bus in self.buses.values():
-            try:
-                if self._enabled:
+        errors = []
+        if self._enabled:
+            for side, bus in self.buses.items():
+                try:
                     bus.disable()
-            finally:
-                bus.close()
+                except Exception as e:  # noqa: BLE001 - keep shutting down the other buses
+                    errors.append((side, "disable", e))
         self._enabled = False
+        for side, bus in self.buses.items():
+            try:
+                bus.close()
+            except Exception as e:  # noqa: BLE001
+                errors.append((side, "close", e))
+        if errors:
+            side, step, first = errors[0]
+            if hasattr(first, "add_note"):
+                first.add_note(f"while shutting down the {side} arm ({step})")
+                for side, step, e in errors[1:]:
+                    first.add_note(f"also failed: {side} arm {step}: {e!r}")
+            raise first
 
     # --- Goals (same interface as OpenArmMuJoCoController) ---
     def set_joint_goals(self, goals):
