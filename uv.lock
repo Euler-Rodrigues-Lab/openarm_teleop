@@ -1548,7 +1548,7 @@ wheels = [
 
 [[package]]
 name = "openarm-can"
-version = "1.4.0"
+version = "1.4.1"
 source = { directory = "external/openarm_can/python" }
 
 [[package]]
