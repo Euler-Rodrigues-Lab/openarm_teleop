@@ -179,6 +179,49 @@ def test_fault_holds_at_measured_pose(monkeypatch, failure, text, recoverable):
         controller.stop()
 
 
+@pytest.mark.parametrize('failure,text', [
+    ('error', 'OVERCURRENT'),
+    ('silent', 'no state from the right arm'),
+    ('can', 'control loop stopped')])
+def test_later_fault_escalates_recoverable_tracking_fault(monkeypatch, failure, text):
+    # A recoverable tracking fault followed by a motor error, stale feedback or a CAN error
+    # must leave the session non-recoverable, so the exit path does not attempt homing.
+    import openarm_teleop.control.hardware_controller as module
+    monkeypatch.setattr(module, 'STATE_TIMEOUT', 0.05)
+    monkeypatch.setattr(module, 'TRACKING_ERROR_DURATION', 0.05)
+    controller, buses = make(max_joint_vel=1.0)
+    controller.connect()
+    controller.start()
+    try:
+        controller.set_joint_goals(dict(q_goal_right=READY, q_goal_left=READY))
+        assert wait(lambda: buses['right'].read().q[3] > 0.2)
+        buses['right'].enabled = False  # the arm stops following its commands
+        assert wait(lambda: controller.fault is not None)
+        assert 'tracking error' in controller.fault and controller.fault_recoverable
+
+        if failure == 'error':
+            buses['right'].faults = ['fake_right joint2: OVERCURRENT']
+        elif failure == 'silent':
+            buses['right'].silent = True
+        else:
+            def read():
+                raise RuntimeError('CAN bus error')
+            monkeypatch.setattr(buses['right'], 'read', read)
+        assert wait(lambda: not controller.fault_recoverable)
+        assert 'tracking error' in controller.fault and text in controller.fault
+        if failure == 'can':
+            assert 'CAN bus error' in controller.fault
+            assert wait(lambda: not controller._thread.is_alive())
+
+        escalated = controller.fault
+        time.sleep(0.1)
+        assert controller.fault == escalated  # recorded once, not every step
+        controller.set_joint_goals(dict(q_goal_left=READY))  # still ignored
+        assert controller.goals_reached()
+    finally:
+        controller.stop()
+
+
 def test_dry_run_replay_reaches_ready_tracks_and_homes(monkeypatch, tmp_path, capsys):
     from geo_kin_core.types import RetargetOutput
     import openarm_teleop.control.hardware_controller as hardware

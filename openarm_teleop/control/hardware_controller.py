@@ -127,8 +127,8 @@ class OpenArmHardwareController:
         self._g_goal = {side: None for side in SIDES}
         self._g_cmd = {side: None for side in SIDES}
 
-        self.fault = None  # text of the first fault
-        self.fault_recoverable = False  # True: the arm can still be moved (tracking error)
+        self.fault = None  # text of the first fault, plus any later fault that escalated it
+        self.fault_recoverable = False  # True: the arm can still be moved (tracking error only)
         self._over_limit_since = None
         self._stats = None  # tracking statistics, collected between start_stats and stop_stats
         self._stop = threading.Event()
@@ -362,9 +362,22 @@ class OpenArmHardwareController:
                     next_time = time.monotonic()  # overran: do not try to catch up
         except Exception as e:  # e.g. the CAN interface went away
             with self._lock:
-                if self.fault is None:
-                    self.fault = f"control loop stopped: {e}"
-                    self.fault_recoverable = False
+                self._record_fault(f"control loop stopped: {e}", recoverable=False)
+
+    def _record_fault(self, text, recoverable):
+        """
+        Record a fault (under the lock). The first fault is kept; a later non-recoverable
+        fault escalates a recoverable one so the exit path does not try to move the arm.
+        Anything else is ignored.
+        """
+        if self.fault is None:
+            self.fault = text
+        elif self.fault_recoverable and not recoverable:
+            self.fault = f"{self.fault}; then {text}"
+        else:
+            return
+        self.fault_recoverable = recoverable
+        self._hold_at_measured()
 
     def _take_measurement(self, side, state):
         self._q_measured[side] = state.q
@@ -399,10 +412,8 @@ class OpenArmHardwareController:
             else:
                 self._over_limit_since = None
 
-            if problems and self.fault is None:
-                self.fault = "; ".join(problems)
-                self.fault_recoverable = recoverable
-                self._hold_at_measured()
+            if problems:
+                self._record_fault("; ".join(problems), recoverable)
 
             for side in self.arms:
                 before = self._q_cmd[side]
