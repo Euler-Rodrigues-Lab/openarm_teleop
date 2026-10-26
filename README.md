@@ -18,7 +18,7 @@ need Git submodules. Publish the dependency releases before using these commands
 
 ```bash
 uv venv .venv
-uv pip install --python .venv/bin/python 'openarm-teleop==0.1.1'
+uv pip install --python .venv/bin/python 'eurola-openarm-teleop==0.1.1'
 ```
 
 For a source checkout after the releases are published:
@@ -34,7 +34,7 @@ with the distribution:
 
 ```bash
 uv pip install --python .venv/bin/python --no-index \
-  --find-links /path/to/wheelhouse 'openarm-teleop==0.1.1'
+  --find-links /path/to/wheelhouse 'eurola-openarm-teleop==0.1.1'
 ```
 
 Developers can explicitly opt into editable dependencies; see [DEVELOPING.md](DEVELOPING.md).
@@ -119,7 +119,7 @@ Replay stops at the end by default. Useful options:
 .venv/bin/python -m openarm_teleop.demos.replay_offline --csv /path/to/body_pose.csv
 ```
 
-CSV replay needs the recording extra: `uv pip install --python .venv/bin/python "openarm-teleop[devices]==0.1.1"`.
+CSV replay needs the recording extra: `uv pip install --python .venv/bin/python "eurola-openarm-teleop[devices]==0.1.1"`.
 The input schema is `geo_kin_core.frames/1`. `--rate` / `--max_fr` selects the
 control rate (default 60 Hz); `--steps` / `--max_frames` limits control frames.
 Headless replay advances recording time deterministically and runs without
@@ -130,7 +130,7 @@ wall-clock pacing. Interactive playback uses the MuJoCo viewer and requires a di
 XR input uses XRT_devices' process-isolated receiver:
 
 ```bash
-uv pip install --python .venv/bin/python "openarm-teleop[devices]==0.1.1"
+uv pip install --python .venv/bin/python "eurola-openarm-teleop[devices]==0.1.1"
 .venv/bin/python -m openarm_teleop.demos.teleop --device xr --host 0.0.0.0 --port 8080
 ```
 
@@ -138,7 +138,7 @@ Connect your XRT client to this receiver. Add `--record` to save input under
 `recordings/`. For a webcam:
 
 ```bash
-uv pip install --python .venv/bin/python "openarm-teleop[mediapipe]==0.1.1"
+uv pip install --python .venv/bin/python "eurola-openarm-teleop[mediapipe]==0.1.1"
 .venv/bin/python -m openarm_teleop.demos.teleop --device mediapipe --camera 0
 ```
 

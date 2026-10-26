@@ -1,6 +1,6 @@
 """Smoke-check an installed release, outside the source checkout."""
 from importlib.metadata import version
-assert version('openarm-teleop') == "0.1.1"
+assert version('eurola-openarm-teleop') == "0.1.1"
 import mujoco
 from openarm_teleop import scene_path, SAMPLE_MOTIONS
 from geo_kin_core.frames import load_frames

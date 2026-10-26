@@ -1,11 +1,11 @@
-# Releasing openarm-teleop
+# Releasing eurola-openarm-teleop
 
 ## One-time PyPI configuration
 
 Create a PyPI account and enable two-factor authentication. In your PyPI account,
 add a pending publisher with:
 
-- PyPI project: `openarm-teleop`
+- PyPI project: `eurola-openarm-teleop`
 - Owner: `Euler-Rodrigues-Lab`
 - Repository: `openarm_teleop`
 - Workflow: `release.yml`
@@ -24,7 +24,7 @@ The workflow uses OIDC Trusted Publishing; do not store a PyPI password in GitHu
 4. Approve the `pypi` environment deployment. PyPI artifacts are immutable:
    fix mistakes with a new version, never replace a published wheel.
 
-Publish geo-kin-core and xrt-devices before openarm-teleop. OpenArm 0.1.1 pins
+Publish eurola-geo-kin-core and eurola-xrt-devices before eurola-openarm-teleop. OpenArm 0.1.1 pins
 both dependencies to the tested 0.1.1 release. After those dependencies are live,
 run `uv lock` in OpenArm and commit the generated lock before tagging OpenArm.
 
