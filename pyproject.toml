@@ -4,18 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eurola-openarm-teleop"
-version = "0.1.1"
+version = "0.1.2"
 description = "OpenArm v1 bimanual teleoperation with licensed Rust retargeting and shared XRT input"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT; robot assets retain their upstream license" }
 authors = [{name = "Chuizheng Kong"}]
-dependencies = ["numpy", "scipy", "mujoco>=3.3", "eurola-geo-kin-core==0.1.1", "eurola-xrt-devices==0.1.1"]
+dependencies = ["numpy", "scipy", "mujoco>=3.3", "eurola-geo-kin-core==0.1.2", "eurola-xrt-devices==0.1.2"]
 
 [project.optional-dependencies]
 hardware = ["openarm-can==1.4.1; sys_platform == 'linux'"]
-devices = ["eurola-xrt-devices[xr,recording]==0.1.1"]
-mediapipe = ["eurola-xrt-devices[mediapipe]==0.1.1"]
+devices = ["eurola-xrt-devices[xr,recording]==0.1.2"]
+mediapipe = ["eurola-xrt-devices[mediapipe]==0.1.2"]
 test = ["pytest"]
 
 [project.scripts]

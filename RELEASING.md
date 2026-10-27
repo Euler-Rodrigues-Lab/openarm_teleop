@@ -24,8 +24,8 @@ The workflow uses OIDC Trusted Publishing; do not store a PyPI password in GitHu
 4. Approve the `pypi` environment deployment. PyPI artifacts are immutable:
    fix mistakes with a new version, never replace a published wheel.
 
-Publish eurola-geo-kin-core and eurola-xrt-devices before eurola-openarm-teleop. OpenArm 0.1.1 pins
-both dependencies to the tested 0.1.1 release. After those dependencies are live,
+Publish eurola-geo-kin-core and eurola-xrt-devices before eurola-openarm-teleop. OpenArm 0.1.2 pins
+both dependencies to the tested 0.1.2 release. After those dependencies are live,
 run `uv lock` in OpenArm and commit the generated lock before tagging OpenArm.
 
 Only public Python packages belong on PyPI. Never include private `geo_kin`

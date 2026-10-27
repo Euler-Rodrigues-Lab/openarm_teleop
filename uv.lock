@@ -621,7 +621,7 @@ epath = [
 
 [[package]]
 name = "eurola-geo-kin-core"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -629,14 +629,14 @@ dependencies = [
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3e/ea/4d1ff7538edbf462adbe873d71aee3e37536219c1712e04fc81b9463037d/eurola_geo_kin_core-0.1.1.tar.gz", hash = "sha256:862c22673b2ef2af86ac1ca8f9abbede38a03bd85cd208f0831afd335dfdae94", size = 49636 }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/b8/6fadbd06ab78ed4db7fffee6e2cd7f446a61df1350c80fa9c5e24ebec671/eurola_geo_kin_core-0.1.2.tar.gz", hash = "sha256:12c8f38c169960e676019ec378542df4e70ce4ebf372ccd617af95d9022b52b4", size = 51043 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/a9/912f7de0521f65394ad9448fee77c0114932d0829acf6646347d2f734a73/eurola_geo_kin_core-0.1.1-py3-none-any.whl", hash = "sha256:9c54d5ec2bea1351f6e0ca4ba1279132e97da1e6230ffc76ed7b84d9ba8f5ed6", size = 47927 },
+    { url = "https://files.pythonhosted.org/packages/d6/4f/c0b5f5df9eac1b12be44ce914c4e94d69b4f98c5c5b78d809a5be364a7b5/eurola_geo_kin_core-0.1.2-py3-none-any.whl", hash = "sha256:07799c25c52340ab43e43cf3f3744416624366d6fe189841791753a61be63781", size = 48523 },
 ]
 
 [[package]]
 name = "eurola-openarm-teleop"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "eurola-geo-kin-core" },
@@ -666,10 +666,10 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "eurola-geo-kin-core", specifier = "==0.1.1" },
-    { name = "eurola-xrt-devices", specifier = "==0.1.1" },
-    { name = "eurola-xrt-devices", extras = ["mediapipe"], marker = "extra == 'mediapipe'", specifier = "==0.1.1" },
-    { name = "eurola-xrt-devices", extras = ["xr", "recording"], marker = "extra == 'devices'", specifier = "==0.1.1" },
+    { name = "eurola-geo-kin-core", specifier = "==0.1.2" },
+    { name = "eurola-xrt-devices", specifier = "==0.1.2" },
+    { name = "eurola-xrt-devices", extras = ["mediapipe"], marker = "extra == 'mediapipe'", specifier = "==0.1.2" },
+    { name = "eurola-xrt-devices", extras = ["xr", "recording"], marker = "extra == 'devices'", specifier = "==0.1.2" },
     { name = "mujoco", specifier = ">=3.3" },
     { name = "numpy" },
     { name = "openarm-can", marker = "sys_platform == 'linux' and extra == 'hardware'", specifier = "==1.4.1" },
@@ -679,7 +679,7 @@ requires-dist = [
 
 [[package]]
 name = "eurola-xrt-devices"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -689,9 +689,9 @@ dependencies = [
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/e2/0f76cb92088466ea42985f7c74c170e275458255627b0ad23c54b4a9fd50/eurola_xrt_devices-0.1.1.tar.gz", hash = "sha256:f0ec4c06040ddba126fb882e8c47f6879064af58e2b9d38c8e3a9d3588fb8223", size = 119275 }
+sdist = { url = "https://files.pythonhosted.org/packages/41/a6/6e71c5e5dbf9efbab82463056077d1a75f4af2d319e1b1aa42b424eba9f1/eurola_xrt_devices-0.1.2.tar.gz", hash = "sha256:95564eed8da6321371caa7aed014a351380b28c0185bcbeb48a5378138d64d71", size = 124324 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6e/87/d74965db8fb5585bce782ec5e0661c5c6e1843a73b396e6263696d664faf/eurola_xrt_devices-0.1.1-py3-none-any.whl", hash = "sha256:cef2e7e270a281f4fa595ec58b3b670c6bd1af1027a0a8f547ca553f07c6cf19", size = 89434 },
+    { url = "https://files.pythonhosted.org/packages/da/9f/7c4dd93236b006cf1e8f0e2470db332b80d03f9d60cd22bf92f7f6b5fcb6/eurola_xrt_devices-0.1.2-py3-none-any.whl", hash = "sha256:051fc75557cdd67a1bc1d96acd6b83ba5d3b66cf250b70018f5d3ecd2e5d446f", size = 92850 },
 ]
 
 [package.optional-dependencies]

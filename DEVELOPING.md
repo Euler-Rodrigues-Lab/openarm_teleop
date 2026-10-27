@@ -9,7 +9,7 @@ uv pip install --python .venv/bin/python -e ../geo_kin_core -e ../XRT_devices -e
 .venv/bin/python -m pytest -q
 ```
 
-Use dependency checkouts at version 0.1.1 to satisfy this release's pins.
+Use dependency checkouts at version 0.1.2 to satisfy this release's pins.
 Run `.venv/bin/python` directly during editable development; `uv sync` restores
 the project's published dependencies. The historical submodules remain available
 for reference but are not the default install source and may be older versions.
