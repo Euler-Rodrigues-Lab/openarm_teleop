@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.automationProfile.linux": {
+        "path": "/bin/bash",
+        "args": ["--rcfile", "${env:HOME}/.bashrc", "-i"]
+    }
+}

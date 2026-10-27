@@ -9,3 +9,6 @@ recordings/
 *.whl
 .env
 license.toml
+
+MUJOCO_LOG.TXT
+logs/*

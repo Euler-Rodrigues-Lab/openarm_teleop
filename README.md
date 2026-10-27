@@ -8,13 +8,13 @@ Replay the same human recordings shipped with G1 and RBY1, or use XR and MediaPi
 
 This repository contains the application, simulation controller, exact v1 model
 and meshes, model specification, and sample motion. The analytic solver is supplied
-separately as a licensed binary wheel. No robot hardware driver is included.
+separately as a licensed binary wheel. Simulation and replay are the default; the CAN hardware driver is an optional extra.
 
 ## Install
 
 Python 3.10 or later and [uv](https://docs.astral.sh/uv/) are required.
 The 0.1.1 release uses versioned PyPI dependencies; customer installations do not
-need Git submodules. Publish the dependency releases before using these commands.
+need Git submodules.
 
 ```bash
 uv venv .venv
@@ -68,6 +68,9 @@ activation is user-wide; switching to another robot's license can require
 An explicit `GEO_KIN_LICENSE` environment variable takes precedence.
 
 ## Offline replay
+
+`openarm-teleop` without arguments launches the bundled simulation replay.
+No camera, headset, or CAN driver is needed. Add `--headless` for no viewer.
 
 Launch the bundled RBY1 `ipman_roll` recording on OpenArm:
 
@@ -143,8 +146,52 @@ uv pip install --python .venv/bin/python "eurola-openarm-teleop[mediapipe]==0.1.
 ```
 
 XRT_devices handles device setup, stale input, frame conversion, and cleanup.
-Live headset/camera behavior and robot hardware operation are separate from the
-headless replay tests; hardware control is not implemented here.
+Live headset/camera behavior is separate from the headless replay tests.
+
+## Hardware
+
+`--hardware` sends the same joint goals to the physical OpenArm v1 through
+[openarm_can](https://github.com/enactic/openarm_can) 1.4.1, without ROS.
+The base installation does not install or build this driver. Install it explicitly
+on Linux when connecting a real arm:
+
+```bash
+uv pip install --python .venv/bin/python "eurola-openarm-teleop[hardware]==0.1.1"
+```
+
+The driver is built from source and requires CMake, a C++ compiler, and
+`libcli11-dev`. Hardware commands require `--hardware`; installing the extra
+does not enable motors. Fake-CAN dry runs work without this extra. Both demos support hardware:
+
+```bash
+# Rehearse the whole sequence on a fake CAN bus (no motors).
+.venv/bin/python -m openarm_teleop.demos.replay_offline --hardware --dry-run
+
+# Real arm, with the bring-up defaults: both arms, half gains, 0.5 rad/s,
+# and for the replay the picking_up_mustard sample at 0.3x speed.
+.venv/bin/python -m openarm_teleop.demos.replay_offline --hardware
+.venv/bin/python -m openarm_teleop.demos.teleop --hardware --device xr
+
+# Both arms at the stock gains and speed limit.
+.venv/bin/python -m openarm_teleop.demos.teleop --hardware --arms both --gain-scale 1 --max-joint-vel 1.5
+```
+
+The buses are classic CAN 2.0 at 1 Mbps, right arm on `can0` and left arm on
+`can1` (`--right-can`, `--left-can`, `--arms`); bring them up before starting.
+The sequence is: read-only pre-flight (every motor replies, no error codes,
+joints inside their limits), enable, ramp to the ready pose, track, then ramp
+home and switch the motors off on Ctrl-C, viewer close, or replay end. Commands
+go out at `--control-hz` (250 by default; classic CAN saturates near 500), are
+clipped `--joint-limit-margin-deg` inside the model's joint limits and move at
+most `--max-joint-vel`. A motor error, a CAN bus error, motors that stop
+replying, or a tracking error above `--max-tracking-error` hold the arm at its
+measured pose. Goal, command, and measured positions of each run are saved to
+`logs/teleop.npz` or `logs/replay.npz` (`--log`).
+
+Zero positions are calibrated one arm at a time with
+`scripts/calibrate_zero.py`, which runs openarm_can's own calibration sequence
+on a classic CAN bus (`--set-zero-only` stores the current pose instead of
+moving). Building openarm_can needs `cmake`, a C++ compiler, and `libcli11-dev`.
 
 ## Solver behavior and model
 

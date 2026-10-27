@@ -8,7 +8,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
-      - run: uv sync --extra test
+      - run: uv sync --locked --extra test
       - run: uv run --no-sync pytest -q
       - run: uv build --no-sources
       - run: uv venv .wheel-test

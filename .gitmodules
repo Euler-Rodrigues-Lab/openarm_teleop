@@ -4,3 +4,6 @@
 [submodule "external/geo_kin_core"]
 	path = external/geo_kin_core
 	url = https://github.com/Euler-Rodrigues-Lab/geo_kin_core.git
+[submodule "external/openarm_can"]
+	path = external/openarm_can
+	url = https://github.com/enactic/openarm_can.git
