@@ -91,7 +91,7 @@ def test_device_cleanup_on_solve_failure(monkeypatch):
     monkeypatch.setattr(module,'make_session',lambda **kw:Session())
     monkeypatch.setattr(inputs,'XRDeviceAdapter',Source)
     with pytest.raises(RuntimeError,match='test failure'):
-        run(parser().parse_args(['--headless','--steps','1']))
+        run(parser().parse_args(['--device','xr','--headless','--steps','1']))
     assert closed==[True]
 
 
