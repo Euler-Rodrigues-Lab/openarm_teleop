@@ -266,3 +266,30 @@ def test_hardware_refuses_unsafe_flags():
         run(parse_args(['--hardware', '--dry-run', '--dynamic', '--headless']))
     with pytest.raises(ValueError, match='--no-safety-filter'):
         run(parse_args(['--hardware', '--no-safety-filter', '--headless']))
+
+
+def test_default_cli_uses_simulation_replay(monkeypatch):
+    import sys
+    from openarm_teleop.demos import teleop
+    from openarm_teleop import SAMPLE_MOTIONS
+    captured = []
+    monkeypatch.setattr(sys, 'argv', ['openarm-teleop', '--headless'])
+    monkeypatch.setattr(teleop, 'run', captured.append)
+    teleop.main()
+    args = captured[0]
+    assert args.device == 'replay'
+    assert args.hardware is False
+    assert args.frames == str(SAMPLE_MOTIONS['ipman_roll'])
+
+
+def test_real_can_missing_extra_has_install_guidance(monkeypatch):
+    import builtins
+    from openarm_teleop.control.openarm_can_interface import OpenArmCANBus
+    original = builtins.__import__
+    def without_can(name, *args, **kwargs):
+        if name == 'openarm_can':
+            raise ModuleNotFoundError(name)
+        return original(name, *args, **kwargs)
+    monkeypatch.setattr(builtins, '__import__', without_can)
+    with pytest.raises(RuntimeError, match=r'eurola-openarm-teleop\[hardware\]'):
+        OpenArmCANBus('fake').open()

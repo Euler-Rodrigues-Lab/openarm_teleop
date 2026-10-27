@@ -34,6 +34,12 @@ jobs:
           uv pip install --python .release-venv/bin/python pytest
           cd /tmp
           "$GITHUB_WORKSPACE/.release-venv/bin/python" -m pytest "$GITHUB_WORKSPACE/tests" -q --import-mode=importlib
+      - name: Verify optional hardware driver installation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libcli11-dev
+          uv pip install --python .release-venv/bin/python 'openarm-can==1.4.1'
+          .release-venv/bin/python -c "import openarm_can; from openarm_teleop.control.openarm_can_interface import OpenArmCANBus"
       - uses: actions/upload-artifact@v4
         with:
           name: distributions
